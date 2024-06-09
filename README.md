@@ -18,7 +18,7 @@ First, clone the repository to your local machine.
 
 ```sh
 git clone https://github.com/Amit-Shriram/Infosys-Springboard---Content-Management-System.git
-cd Infosys_Project
+cd Infosys-Springboard---Content-Management-System
 ```
 
 ### Step 2: Set Up the Backend(Wrapper API)
