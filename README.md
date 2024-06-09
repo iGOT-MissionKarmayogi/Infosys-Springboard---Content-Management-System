@@ -69,6 +69,11 @@ cd Infosys-Springboard---Content-Management-System
     ```sh
     http://localhost:1337/api/<your_collection_name>s?populate=*
     ```
+When you create a new collection type in CMS make sure you grand permission for its API access, for that 
+after creating new collection type,
+```sh
+go to settings -> USERS & PERMISSIONS PLUGIN -> Roles -> Public -> then you can see the collection type name that you have created select that -> select find and find one
+```
 
 ### Step 4: Set Up the Frontend
 
