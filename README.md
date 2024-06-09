@@ -1,7 +1,5 @@
 # Infosys-Springboard---Content-Management-System
 
-# Infosys-Springboard---Content-Management-System
-
 ## Installation Guide
 
 This project consists of three main folders:
