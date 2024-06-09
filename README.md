@@ -67,7 +67,7 @@ cd Infosys-Springboard---Content-Management-System
     http://localhost:1337/api/bikeinfos?populate=*
     ```
     ```sh
-    http://localhost:1337/api/<your_collection_name>?populate=*
+    http://localhost:1337/api/<your_collection_name>s?populate=*
     ```
 
 ### Step 4: Set Up the Frontend
