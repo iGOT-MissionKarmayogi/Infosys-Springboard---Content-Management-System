@@ -17,7 +17,7 @@ This project consists of three main folders:
 First, clone the repository to your local machine.
 
 ```sh
-git clone https://github.com/Amit-Shriram/Infosys_Project.git
+git clone https://github.com/Amit-Shriram/Infosys-Springboard---Content-Management-System.git
 cd Infosys_Project
 ```
 
