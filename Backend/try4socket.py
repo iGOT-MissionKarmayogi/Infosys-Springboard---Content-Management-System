@@ -29,18 +29,20 @@ def check_table_exists(table_name):
     result = c.fetchone()
     c.close()
     conn.close()
-    if result:
-        return True
-    else:
-        return False
+    return bool(result)
 
+def get_table_columns(table_name):
+    c, conn = connection()
+    c.execute(f"PRAGMA table_info({table_name})")
+    columns = [info[1] for info in c.fetchall()]
+    conn.close()
+    return columns
 
 def delete_entry(table_name, entry_id):
     c, conn = connection()
     c.execute(f"DELETE FROM {table_name} WHERE id=?", (entry_id,))
     conn.commit()
     conn.close()
-
 
 def update_entry(table_name, entry_id, new_data):
     c, conn = connection()
@@ -59,7 +61,7 @@ def update_entry(table_name, entry_id, new_data):
         f"UPDATE {table_name} SET {set_clause} WHERE id=?", values + (entry_id,))
     conn.commit()
     conn.close()
-    
+
 def create_entry(table_name, entry_data):
     c, conn = connection()
     if 'image' in entry_data:
@@ -100,14 +102,12 @@ def categotywise(category):
             'image': row[11],
         })
     return bikeslist
-    
 
 def download_image(url, filename):
     response = requests.get(url)
     if response.status_code == 200:
         with open(filename, 'wb') as f:
             f.write(response.content)
-
 
 def extract_filename_from_url(url):
     parsed_url = urlparse(url)
@@ -154,7 +154,6 @@ def get_electric():
 @app.route('/data/<table_name>', methods=['GET'])
 def get_data_table(table_name):
     return get_table_data(table_name)
-        
 
 @app.route('/getai', methods=['POST'])
 def generate_image():
@@ -196,7 +195,6 @@ def get_bike_by_id(id):
         })
     return jsonify(bike_indi)
 
-
 @app.route('/webhook', methods=['POST'])
 def webhook_handler():
     data = request.json
@@ -209,11 +207,16 @@ def webhook_handler():
             create_table = "CREATE TABLE IF NOT EXISTS {} (id INT PRIMARY KEY)".format(table_name)
             c, conn = connection()
             c.execute(create_table)
+            conn.commit()
+            conn.close()
 
-            
-            for key, value in entry_data.items():    # Extract column names and data types from entry dictionary
-                if key in ['id', 'createdAt', 'updatedAt', 'publishedAt']:
-                    continue
+        current_columns = get_table_columns(table_name)
+        c, conn = connection()
+        
+        for key, value in entry_data.items():    # Extract column names and data types from entry dictionary
+            if key in ['id', 'createdAt', 'updatedAt', 'publishedAt']:
+                continue
+            if key not in current_columns:
                 if isinstance(value, int):
                     data_type = "INT"
                 elif isinstance(value, float):
@@ -222,10 +225,9 @@ def webhook_handler():
                     data_type = "TEXT"
                 c.execute("ALTER TABLE {} ADD COLUMN {} {}".format(table_name, key, data_type))
 
-            conn.commit()
-            conn.close()
-            print(f"Table '{table_name}' created with columns based on entry data.")
-
+        conn.commit()
+        conn.close()
+        
         create_entry(table_name, entry_data)
         print(f"Entry created in table {table_name}")
         socketio.emit('update_data', {'message': 'Data updated'})
@@ -238,6 +240,28 @@ def webhook_handler():
     
     elif event_type == "entry.update":
         id = entry_data['id']
+        current_columns = get_table_columns(table_name)
+        c, conn = connection()
+        
+        for key, value in entry_data.items():
+            if key in ['id', 'createdAt', 'updatedAt', 'publishedAt']:
+                continue
+            if key not in current_columns:
+                if isinstance(value, int):
+                    data_type = "INT"
+                elif isinstance(value, float):
+                    data_type = "REAL"
+                else:
+                    data_type = "TEXT"
+                c.execute("ALTER TABLE {} ADD COLUMN {} {}".format(table_name, key, data_type))
+                
+        for column in current_columns:
+            if column not in entry_data.keys() and column not in ['id']:
+                c.execute(f"ALTER TABLE {table_name} DROP COLUMN {column}")
+
+        conn.commit()
+        conn.close()
+        
         update_entry(table_name, id, entry_data)
         print(f"data updated for id {id} in table {table_name}")
         socketio.emit('update_data', {'message': 'Data updated'})
@@ -248,16 +272,13 @@ def webhook_handler():
     print(data)
     return 'OK'
 
-
 @socketio.on('connect')
 def handle_connect():
     print('Client connected')
 
-
 @socketio.on('disconnect')
 def handle_disconnect():
     print('Client disconnected')
-
 
 if __name__ == "__main__":
     if not os.path.exists('BikeImages'):
