@@ -1,0 +1,22 @@
+{
+  "kind": "collectionType",
+  "collectionName": "aiimages",
+  "info": {
+    "singularName": "aiimage",
+    "pluralName": "aiimages",
+    "displayName": "AI Image"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "prompt": {
+      "type": "string"
+    },
+    "generated_image": {
+      "type": "media",
+      "multiple": false,
+      "required": false
+    }
+  }
+}
